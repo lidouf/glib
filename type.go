@@ -257,6 +257,10 @@ func QuarkFromString(s string) Quark {
 
 type Error C.GError
 
+func (e *Error) g() *C.GError {
+	return (*C.GError)(e)
+}
+
 func (e *Error) Error() string {
 	return C.GoString((*C.char)(e.message))
 }
@@ -267,4 +271,9 @@ func (e *Error) GetDomain() Quark {
 
 func (e *Error) GetCode() int {
 	return int(e.code)
+}
+
+func (e *Error) Clear() {
+	addr := e.g()
+	C.g_clear_error(&addr)
 }
