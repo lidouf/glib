@@ -344,24 +344,27 @@ func convertVal(t reflect.Type, v reflect.Value) reflect.Value {
 	} else if v.Type() == ptr_t {
 		ptr = v.Interface().(Pointer)
 	}
-	if ptr != nil {
-		var ret reflect.Value
-		if t.Implements(ptr_setter_i) {
-			// Desired type implements PointerSetter so we are creating
-			// new value with desired type and set it from ptr
-			if t.Kind() == reflect.Ptr {
-				ret = reflect.New(t.Elem())
-			} else {
-				ret = reflect.Zero(t)
-			}
-			ret.Interface().(PointerSetter).SetPtr(ptr)
-		} else if t.Kind() == reflect.Ptr {
-			// t doesn't implements PointerSetter but it is pointer
-			// so we bypass type checking and setting it from ptr.
-			ret = valueFromPointer(ptr, t)
+	//LiD: uncomment ptr != nil
+	//cause if we return ptr is nil, t is different from v.kind, which result in panic
+	//so we need type cast here
+	//if ptr != nil {
+	var ret reflect.Value
+	if t.Implements(ptr_setter_i) {
+		// Desired type implements PointerSetter so we are creating
+		// new value with desired type and set it from ptr
+		if t.Kind() == reflect.Ptr {
+			ret = reflect.New(t.Elem())
+		} else {
+			ret = reflect.Zero(t)
 		}
-		return ret
+		ret.Interface().(PointerSetter).SetPtr(ptr)
+	} else if t.Kind() == reflect.Ptr {
+		// t doesn't implements PointerSetter but it is pointer
+		// so we bypass type checking and setting it from ptr.
+		ret = valueFromPointer(ptr, t)
 	}
+	return ret
+	//}
 	return v
 }
 

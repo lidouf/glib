@@ -257,6 +257,10 @@ func QuarkFromString(s string) Quark {
 
 type Error C.GError
 
+func (e *Error) Type() Type {
+	return TypeFromName("GError")
+}
+
 func (e *Error) g() *C.GError {
 	return (*C.GError)(e)
 }
