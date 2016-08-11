@@ -96,6 +96,14 @@ void _signal_emit(const GValue *inst_and_params, guint id, GQuark detail,
 		GValue *ret) {
 	return g_signal_emitv( inst_and_params, id, detail, ret);
 }
+static inline
+guint _gobject_REFCOUNT(GObject* obj) {
+	return obj->ref_count;
+}
+static inline
+guint _gobject_REFCOUNT_VALUE(GObject* obj) {
+	return g_atomic_int_get((gint *) &obj->ref_count);
+}
 */
 import "C"
 
@@ -147,6 +155,14 @@ func (o *Object) Ref() *Object {
 
 func (o *Object) Unref() {
 	C.g_object_unref(C.gpointer(o.p))
+}
+
+func (o *Object) RefCount() uint {
+	return uint(C._gobject_REFCOUNT(o.p))
+}
+
+func (o *Object) RefCountValue() uint {
+	return uint(C._gobject_REFCOUNT_VALUE(o.p))
 }
 
 func (o *Object) RefSink() *Object {
