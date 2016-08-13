@@ -241,10 +241,6 @@ func gBoolean(b bool) C.gboolean {
 	return C.FALSE
 }
 
-func CgBoolean(b bool) C.gboolean {
-	return gBoolean(b)
-}
-
 type Quark C.GQuark
 
 func (q Quark) GQuark() C.GQuark {
