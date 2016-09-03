@@ -109,10 +109,14 @@ func (t Type) Match(rt reflect.Type) bool {
 			rt = rt.Elem()
 		}
 		r := reflect.New(rt).Interface().(TypeGetter).Type()
-		return t.QName() == r.QName()
+		if t.QName() == r.QName() {
+			return true
+		}
 	}
 	if rt.Implements(object_caster) {
-		return t.IsA(TYPE_OBJECT)
+		if t.IsA(TYPE_OBJECT) {
+			return true
+		}
 	}
 	switch rt.Kind() {
 	case reflect.Invalid:
