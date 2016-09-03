@@ -104,15 +104,15 @@ var type_getter = reflect.TypeOf((*TypeGetter)(nil)).Elem()
 var object_caster = reflect.TypeOf((*ObjectCaster)(nil)).Elem()
 
 func (t Type) Match(rt reflect.Type) bool {
-	if rt.Implements(object_caster) {
-		return t.IsA(TYPE_OBJECT)
-	}
 	if rt.Implements(type_getter) {
 		if rt.Kind() == reflect.Ptr {
 			rt = rt.Elem()
 		}
 		r := reflect.New(rt).Interface().(TypeGetter).Type()
 		return t.QName() == r.QName()
+	}
+	if rt.Implements(object_caster) {
+		return t.IsA(TYPE_OBJECT)
 	}
 	switch rt.Kind() {
 	case reflect.Invalid:
