@@ -104,6 +104,11 @@ static inline
 guint _gobject_REFCOUNT_VALUE(GObject* obj) {
 	return g_atomic_int_get((gint *) &obj->ref_count);
 }
+static GObjectClass *
+_g_object_get_class (GObject *object)
+{
+	return (G_OBJECT_GET_CLASS(object));
+}
 */
 import "C"
 
@@ -111,6 +116,8 @@ import (
 	"fmt"
 	"reflect"
 	"unsafe"
+	//"errors"
+	//"runtime"
 )
 
 type ObjectCaster interface {
@@ -179,12 +186,53 @@ func (o *Object) SetProperty(name string, val interface{}) {
 }
 
 //LiD: add value:interface{} param & g_value_init method call
-func (o *Object) GetProperty(name string, value interface{}) interface{} {
-	s := C.CString(name)
+//func (o *Object) GetProperty(name string, value interface{}) interface{} {
+//	s := C.CString(name)
+//	defer C.free(unsafe.Pointer(s))
+//	v := new(Value)
+//	C.g_value_init(v.g(), TypeOf(value).g())
+//	C.g_object_get_property(o.g(), (*C.gchar)(s), v.g())
+//	return v.Get()
+//}
+
+//ValueInit is a wrapper around g_value_init() and allocates and
+//initializes a new Value with the Type t.  A runtime finalizer is set
+//to call g_value_unset() on the underlying GValue after leaving scope.
+//ValueInit() returns a non-nil error if the allocation failed.
+//func ValueInit(t Type) (*Value, error) {
+//	c := C._g_value_init(C.GType(t))
+//	if c == nil {
+//		return nil, errNilPtr
+//	}
+//
+//	v := &Value{c}
+//
+//	runtime.SetFinalizer(v, (*Value).unset)
+//	return v, nil
+//}
+
+// GetPropertyType returns the Type of a property of the underlying GObject.
+// If the property is missing it will return TYPE_INVALID and an error.
+func (o *Object) GetPropertyType(name string) Type {
+	cstr := C.CString(name)
+	defer C.free(unsafe.Pointer(cstr))
+
+	paramSpec := C.g_object_class_find_property(C._g_object_get_class(o.g()), (*C.gchar)(cstr))
+	if paramSpec == nil {
+		panic("couldn't find Property")
+	}
+	return Type(paramSpec.value_type)
+}
+
+func (o *Object) GetProperty(name string) interface{} {
+	s := (*C.gchar)(C.CString(name))
 	defer C.free(unsafe.Pointer(s))
+
+	t := o.GetPropertyType(name)
+
 	v := new(Value)
-	C.g_value_init(v.g(), TypeOf(value).g())
-	C.g_object_get_property(o.g(), (*C.gchar)(s), v.g())
+	C.g_value_init(v.g(), t.g())
+	C.g_object_get_property(o.g(), s, v.g())
 	return v.Get()
 }
 
