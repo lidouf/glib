@@ -104,6 +104,12 @@ var type_getter = reflect.TypeOf((*TypeGetter)(nil)).Elem()
 var object_caster = reflect.TypeOf((*ObjectCaster)(nil)).Elem()
 
 func (t Type) Match(rt reflect.Type) bool {
+	if rt.Implements(object_caster) {
+		if t.IsA(TYPE_OBJECT) {
+			return true
+		}
+	}
+
 	if rt.Implements(type_getter) {
 		if rt.Kind() == reflect.Ptr {
 			rt = rt.Elem()
@@ -113,11 +119,7 @@ func (t Type) Match(rt reflect.Type) bool {
 			return true
 		}
 	}
-	if rt.Implements(object_caster) {
-		if t.IsA(TYPE_OBJECT) {
-			return true
-		}
-	}
+
 	switch rt.Kind() {
 	case reflect.Invalid:
 		return t == TYPE_INVALID
