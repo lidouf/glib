@@ -165,11 +165,11 @@ func (o *Object) Unref() {
 }
 
 func (o *Object) RefCount() uint {
-	return uint(C._gobject_REFCOUNT(o.p))
+	return uint(C._gobject_REFCOUNT(o.g()))
 }
 
 func (o *Object) RefCountValue() uint {
-	return uint(C._gobject_REFCOUNT_VALUE(o.p))
+	return uint(C._gobject_REFCOUNT_VALUE(o.g()))
 }
 
 func (o *Object) RefSink() *Object {
